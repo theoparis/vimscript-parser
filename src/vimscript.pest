@@ -1,0 +1,29 @@
+WHITESPACE = _{ " " }
+
+identifier = { (ASCII_ALPHANUMERIC | "_")* }
+
+number = {
+	ASCII_DIGIT+
+}
+
+expression = {
+	number
+}
+
+scope = {
+	"b" | "w" | "t" | "g" | "l" | "s" | "a" | "v"
+}
+
+let_statement = {
+	"let" ~ scope ~ ":"	~ identifier ~ "=" ~ expression 
+}
+
+statement = {
+	let_statement
+}
+
+file = {
+	SOI ~
+	((statement | expression)? ~ NEWLINE)* ~
+	EOI
+}
