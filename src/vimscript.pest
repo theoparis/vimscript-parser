@@ -1,13 +1,28 @@
-WHITESPACE = _{ " " }
+WHITESPACE = _{ " " | "\t" | NEWLINE }
 
-identifier = { (ASCII_ALPHANUMERIC | "_")* }
+identifier = { (ASCII_ALPHANUMERIC | "_")+ }
 
-number = {
-	ASCII_DIGIT+
+namespaced_identifier = {
+	(identifier ~ ("#")?)+
+}
+
+number = @{
+	"-"?
+	~ ("0" | ASCII_NONZERO_DIGIT ~ ASCII_DIGIT*)
+	~ ("." ~ ASCII_DIGIT*)?
+	~ (^"e" ~ ("+" | "-")? ~ ASCII_DIGIT+)?
+}
+
+string = ${ "\"" ~ inner ~ "\"" }
+inner = @{ char* }
+char = {
+	!("\"" | "\\") ~ ANY
+	| "\\" ~ ("\"" | "\\" | "/" | "b" | "f" | "n" | "r" | "t")
+	| "\\" ~ ("u" ~ ASCII_HEX_DIGIT{4})
 }
 
 expression = {
-	number
+	number | string
 }
 
 scope = {
@@ -18,8 +33,13 @@ let_statement = {
 	"let" ~ scope ~ ":"	~ identifier ~ "=" ~ expression 
 }
 
+call_statement = {
+	"call" ~ namespaced_identifier ~ "(" ~ (expression ~ (",")?)* ~ ")"
+}
+
 statement = {
-	let_statement
+	let_statement |
+	call_statement
 }
 
 file = {
